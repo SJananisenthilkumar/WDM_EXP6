@@ -44,21 +44,32 @@ sklearn to demonstrate Information Retrieval using the Vector Space Model.
 
 ###### Preprocess documents and store them in a dictionary
     preprocessed_docs = {doc_id: preprocess_text(doc) for doc_id, doc in documents.items()}
-
+    
+###### Display Term Frequency (TF)
+    count_vectorizer = CountVectorizer()
+    tf_matrix = count_vectorizer.fit_transform(preprocessed_docs.values())
+    tf_df = pd.DataFrame(tf_matrix.toarray(), index=preprocessed_docs.keys(), columns=count_vectorizer.get_feature_names_out())
+    print("=== Term Frequency (TF) ===")
+    print(tf_df)
 ###### Construct TF-IDF matrix
     tfidf_vectorizer = TfidfVectorizer()
     tfidf_matrix = tfidf_vectorizer.fit_transform(preprocessed_docs.values())
+    tfidf_df = pd.DataFrame(tfidf_matrix.toarray(), index=preprocessed_docs.keys(), columns=tfidf_vectorizer.get_feature_names_out())
+    print("\n=== TF-IDF ===")
+    print(tfidf_df.round(4))
 
 ###### Calculate cosine similarity between query and documents
     def search(query, tfidf_matrix, tfidf_vectorizer):
-       query_processed = preprocess_text(query)
-       query_vec = tfidf_vectorizer.transform([query_processed])
-       similarities = cosine_similarity(query_vec, tfidf_matrix).flatten()
-       ranked_results = sorted(
-           zip(preprocessed_docs.keys(), documents.values(), similarities),
-           key=lambda x: x[2],
-           reverse=True
-    )
+    preprocessed_query = preprocess_text(query)
+    query_vec = tfidf_vectorizer.transform([preprocessed_query])
+    cosine_sim = cosine_similarity(query_vec, tfidf_matrix).flatten()
+
+    results = []
+    doc_ids = list(preprocessed_docs.keys())
+    for i, score in enumerate(cosine_sim):
+        results.append((doc_ids[i], documents[doc_ids[i]], score))
+    results.sort(key=lambda x: x[2], reverse=True)
+    return results    
 
 ###### Get input from user
     query = input("Enter your query: ")
@@ -80,7 +91,7 @@ sklearn to demonstrate Information Retrieval using the Vector Space Model.
     print("The highest rank cosine score is:", highest_rank_score)
 
 ### Output:
-<img width="715" height="718" alt="image" src="https://github.com/user-attachments/assets/ad26eaad-5d7a-44aa-b3ef-009d02590650" />
+<img width="482" height="728" alt="image" src="https://github.com/user-attachments/assets/94a0fbf2-867d-4cf9-afcd-3d7ae42bffa0" />
 
 ### Result:
 Thus the Python program for Information Retrieval Using Vector Space Model in Python is executed successfully.
